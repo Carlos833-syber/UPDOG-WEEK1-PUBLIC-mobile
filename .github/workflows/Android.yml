@@ -50,6 +50,7 @@ jobs:
       - name: Prepare packaged assets
         run: |
           python3 -m unittest discover -s tests -p 'test_android_assets.py'
+          haxe -cp tests -lib hscript-iris --run CheckPolusStage content/stages/polus.hx
           python3 scripts/prepare-android-assets.py
       - name: Verify packaged asset IDs
         run: |

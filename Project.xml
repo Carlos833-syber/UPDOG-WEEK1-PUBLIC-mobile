@@ -119,6 +119,7 @@
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
 	<haxedef name="CRASH_HANDLER" if="desktop release"/>
+	<haxedef name="CRASH_HANDLER" if="android"/>
 
 	<haxedef name="HXCPP_CHECK_POINTER" if="CRASH_HANDLER" />
 	<haxedef name="HXCPP_STACK_LINE" if="CRASH_HANDLER" />

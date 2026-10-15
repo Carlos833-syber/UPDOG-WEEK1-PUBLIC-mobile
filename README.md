@@ -40,10 +40,15 @@ storage for both the APK and its extracted game files. The first launch displays
 file preparation progress. Updates replace changed bundled files; game saves are
 kept separately. No shared-storage permission or manual asset download is needed.
 
-Touch controls: four bottom buttons navigate menus and play notes (including
-simultaneous notes and holds). **OK/BACK** navigate menus; **PAUSE**, **BACK** and
-**DODGE** are at the top during gameplay. The buttons follow the configured key
-bindings. Keyboard/gamepad support remains available. Desktop editors are not
+Touch controls: a directional pad and **A/B** buttons navigate menus. During songs,
+four full-height touch lanes support simultaneous notes and holds; **PAUSE**,
+**BACK** and **DODGE** are at the top. In **Options → Gameplay Settings**, enable
+**Middlescroll**, toggle **Four-Lane Hitbox**, or disable **Show Hitboxes** to hide
+the lanes while keeping touch input active. Disabling Four-Lane Hitbox uses the
+directional pad during gameplay. The buttons follow the configured key bindings.
+New Android installations default to low quality to reduce stage texture memory;
+existing saved quality settings are preserved. Keyboard/gamepad support remains
+available. Desktop editors are not
 optimized for touch. Discord RPC and desktop Lua support are disabled on Android;
 this mod's bundled scripts use HScript. Video playback remains enabled via hxvlc.
 

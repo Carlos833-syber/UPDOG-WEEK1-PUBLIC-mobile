@@ -27,7 +27,6 @@ var evilCam = FlxCamera;
 var anotherCam = FlxCamera;
 var bfVoters:FlxTypedGroup;
 var redVoters:FlxTypedGroup;
-
 var everyoneLook:String = ''; // Set this to -peep WHEN THEY START YAPPING
 var p = 0;
 /*
@@ -65,7 +64,6 @@ function onLoad()
 	
 	global.set('base_bg', bg);
 	global.set('base_stars', stars);
-	
 	
 	mountains = new BGSprite(null, -1569, -185).loadFromSheet(ext + 'bg2', 'bgBack', 0);
 	mountains.scrollFactor.set(0.8, 0.8);
@@ -117,9 +115,8 @@ function onLoad()
 	add(blackSprite);
 	blackSprite.alpha = 0;
 	global.set('blackSprite', blackSprite);
-
-
-	//very bandaid fix but it works for now.. that sabo custcene rly fucked shit up ig lmao
+	
+	// very bandaid fix but it works for now.. that sabo custcene rly fucked shit up ig lmao
 	nigga = new FlxSprite(0, 0).makeScaledGraphic(1280, 720, 0xff000000);
 	nigga.cameras = [game.camOther];
 	add(nigga);
@@ -176,7 +173,7 @@ function onCreatePost()
 		evilGreen = new BGSprite(null, -550, 725).loadSparrowFrames(ext + "green");
 		evilGreen.animation.addByPrefix('cutscene', 'scene instance 1', 24, false);
 		evilGreen.scale.set(2.3, 2.3);
-		evilGreen.scrollFactor(1.2, 1.2);
+		evilGreen.scrollFactor.set(1.2, 1.2);
 		evilGreen.alpha = 0;
 		add(evilGreen);
 		
@@ -941,8 +938,7 @@ function buildMeltdownBG()
 	add(boomBox);
 	boomBox.animation.play('idle');
 	boomBox.zIndex = 6;
-
-
+	
 	emergency = new BGSprite(null, 0, 50).loadSparrowFrames(ext + "meltdown/meeting");
 	emergency.cameras = [game.camHUD];
 	emergency.animation.addByPrefix('idle', 'meeting', 24, false);
@@ -983,14 +979,13 @@ function buildMeltdownBG()
 	redVoters = new FlxTypedGroup();
 	redVoters.zIndex = 14;
 	add(redVoters);
-
-	global.set('redVoters',redVoters);
+	
+	global.set('redVoters', redVoters);
 	
 	bfVoters = new FlxTypedGroup();
 	bfVoters.zIndex = 14;
 	add(bfVoters);
-	global.set('bfVoters',bfVoters);
-
+	global.set('bfVoters', bfVoters);
 	
 	purple = new BGSprite(null, 3000, 650).loadSparrowFrames(ext + "meltdown/crewOutside");
 	purple.animation.addByIndices('walk', 'PURPLE', [0, 1, 2, 3, 4, 5, 6, 7], "", 24, true);

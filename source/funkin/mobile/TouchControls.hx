@@ -7,6 +7,7 @@ import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.TouchEvent;
+import openfl.geom.Rectangle;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 import openfl.ui.Multitouch;
@@ -17,6 +18,9 @@ class TouchControls extends Sprite
 {
 	var buttons:Array<Sprite> = [];
 	var labels:Array<TextField> = [];
+	var bounds:Array<Rectangle> = [];
+	var fourLanes:Bool = false;
+	var showHitboxes:Bool = true;
 	var fingers:Map<Int, Int> = [];
 	var held:Map<Int, Int> = [];
 	var gameplay:Bool = false;
@@ -34,7 +38,7 @@ class TouchControls extends Sprite
 	function initialize(_:Event):Void
 	{
 		Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
-		for (label in ["<", "v", "^", ">", "DODGE", "OK", "BACK"])
+		for (label in ["<", "v", "^", ">", "DODGE", "A", "B"])
 		{
 			var button = new Sprite();
 			var text = new TextField();
@@ -45,6 +49,7 @@ class TouchControls extends Sprite
 			addChild(button);
 			buttons.push(button);
 			labels.push(text);
+			bounds.push(new Rectangle());
 		}
 		stage.addEventListener(TouchEvent.TOUCH_BEGIN, onTouch);
 		stage.addEventListener(TouchEvent.TOUCH_MOVE, onTouch);
@@ -60,16 +65,29 @@ class TouchControls extends Sprite
 	{
 		var state = FlxG.state;
 		var playing = Std.isOfType(state, PlayState) && state.subState == null && !PlayState.instance.paused;
-		if (state != lastState || state.subState != lastSubState || playing != gameplay)
+		if (state != lastState
+			|| state.subState != lastSubState
+			|| playing != gameplay
+			|| fourLanes != ClientPrefs.mobileFourLaneHitbox
+			|| showHitboxes != ClientPrefs.mobileShowHitboxes)
 		{
 			releaseAll(null);
 			lastState = state;
 			lastSubState = state.subState;
 			gameplay = playing;
-			labels[5].text = gameplay ? "PAUSE" : "OK";
+			fourLanes = ClientPrefs.mobileFourLaneHitbox;
+			showHitboxes = ClientPrefs.mobileShowHitboxes;
+			labels[5].text = gameplay ? "PAUSE" : "A";
+			labels[6].text = gameplay ? "BACK" : "B";
+			resize(null);
 		}
 		visible = !Std.isOfType(state, AndroidBootstrap);
 		buttons[4].visible = gameplay;
+		for (i in 0...buttons.length)
+		{
+			var pressed = held.exists(keyFor(i));
+			buttons[i].alpha = gameplay && i < 4 && fourLanes ? (showHitboxes ? (pressed ? 0.45 : 0.12) : 0) : (pressed ? 1 : 0.65);
+		}
 	}
 	
 	function resize(_:Event):Void
@@ -78,23 +96,46 @@ class TouchControls extends Sprite
 		var w = stage.stageWidth;
 		var h = stage.stageHeight;
 		var size = Math.min(w / 8, h / 5);
+		var gap = 8.0;
+		var padX = 12.0;
+		var padY = h - 2 * size - gap - 12;
+		var colors = [0xC24B99, 0x00FFFF, 0x12FA05, 0xF9393F];
 		for (i in 0...buttons.length)
 		{
 			var button = buttons[i];
+			var lane = gameplay && fourLanes && i < 4;
+			var width = lane ? w / 4 : size;
+			var height = lane ? h : size;
+			if (lane)
+			{
+				button.x = i * width;
+				button.y = 0;
+			}
+			else if (i < 4)
+			{
+				// A directional pad at the left, with up above down.
+				button.x = padX + (i == 0 ? 0 : i == 3 ? 2 : 1) * (size + gap);
+				button.y = padY + (i == 2 ? 0 : size + gap);
+			}
+			else
+			{
+				button.x = w - (7 - i) * (size + gap) - 12;
+				button.y = gameplay ? 12 : h - size - 12 - (i == 5 ? size * 0.6 : 0);
+			}
+			bounds[i].setTo(button.x, button.y, width, height);
 			button.graphics.clear();
-			button.graphics.beginFill(0x182030, 0.6);
-			button.graphics.lineStyle(2, 0xFFFFFF, 0.65);
-			button.graphics.drawRoundRect(0, 0, size, size, 12);
+			button.graphics.beginFill(i < 4 ? colors[i] : i == 5 ? 0x12FA05 : 0xF9393F);
+			button.graphics.lineStyle(2, 0xFFFFFF, 0.8);
+			if (lane) button.graphics.drawRect(0, 0, width, height);
+			else button.graphics.drawRoundRect(0, 0, width, height, 12);
 			button.graphics.endFill();
-			button.x = i < 2 ? 12 + i * (size + 8) : i < 4 ? w - (4 - i) * (size + 8) - 4 : w - (7 - i) * (size + 8);
-			button.y = i < 4 ? h - size - 12 : 12;
-			var fontSize = Std.int(size / 5);
+			var fontSize = Std.int(size / (i < 4 || !gameplay ? 2 : 5));
 			var format = new TextFormat("_sans", fontSize, 0xFFFFFF, true, null, null, "center");
 			labels[i].defaultTextFormat = format;
 			labels[i].setTextFormat(format);
-			labels[i].width = size;
+			labels[i].width = width;
 			labels[i].height = size;
-			labels[i].y = (size - fontSize * 1.4) / 2;
+			labels[i].y = lane ? height - size : (size - fontSize * 1.4) / 2;
 		}
 	}
 	
@@ -112,10 +153,12 @@ class TouchControls extends Sprite
 		var key = -1;
 		if (visible)
 		{
-			for (i in 0...buttons.length)
+			// Action buttons take priority over the full-height note lanes.
+			for (offset in 0...buttons.length)
 			{
+				var i = buttons.length - 1 - offset;
 				var button = buttons[i];
-				if (button.visible && button.hitTestPoint(event.stageX, event.stageY))
+				if (button.visible && bounds[i].contains(event.stageX, event.stageY))
 				{
 					key = keyFor(i);
 					break;

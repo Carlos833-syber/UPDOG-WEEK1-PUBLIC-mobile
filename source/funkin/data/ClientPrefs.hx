@@ -2,6 +2,7 @@ package funkin.data;
 
 import funkin.backend.PlayerSettings;
 import funkin.data.Controls.KeyboardScheme;
+
 import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxSave;
 
@@ -16,21 +17,20 @@ import flixel.util.FlxSave;
 class ClientPrefs
 {
 	// impostor ------------------------------------------------------------------------//
-
 	@saveVar public static var language:String = 'english';
-
+	
 	@saveVar public static var colorblind:Bool = false;
-
+	
 	@saveVar public static var startedUp:Bool = false;
-
+	
 	@saveVar public static var disc_rpc:Bool = false;
-
+	
 	// graphics ------------------------------------------------------------------------//
 	@saveVar public static var gpuCaching:Bool = true;
 	
 	@saveVar public static var globalAntialiasing:Bool = true;
 	
-	@saveVar public static var lowQuality:Bool = false;
+	@saveVar public static var lowQuality:Bool = #if android true #else false #end;
 	
 	@saveVar public static var shaders:Bool = true;
 	
@@ -67,6 +67,10 @@ class ClientPrefs
 	@saveVar public static var downScroll:Bool = false;
 	
 	@saveVar public static var middleScroll:Bool = false;
+	
+	@saveVar public static var mobileFourLaneHitbox:Bool = true;
+	
+	@saveVar public static var mobileShowHitboxes:Bool = true;
 	
 	@saveVar public static var opponentStrums:Bool = true;
 	
@@ -214,7 +218,6 @@ class ClientPrefs
 	 */
 	public static function loadPrefs()
 	{
-		
 		if (FlxG.save.data.volume != null) FlxG.sound.volume = FlxG.save.data.volume;
 		
 		if (FlxG.save.data.mute != null) FlxG.sound.muted = FlxG.save.data.mute;

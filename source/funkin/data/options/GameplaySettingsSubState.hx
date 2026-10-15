@@ -10,7 +10,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 	{
 		title = 'Gameplay Settings';
 		rpcTitle = 'Gameplay Settings Menu'; // for Discord Rich Presence
-
+		
 		// I'd suggest using "Downscroll" as an example for making your own option since it is the simplest here
 		var option:Option = new Option('Downscroll', // Name
 			'Changes position of the notes', // Description
@@ -19,38 +19,42 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			false); // Default value
 		addOption(option);
 		
-		var option:Option = new Option('Ghost Tapping', "Removes penalty for hitting keys when no notes are present",
-			'ghostTapping', 'bool', true);
+		var option:Option = new Option('Middlescroll', 'Centers your notes on the screen.', 'middleScroll', 'bool', false);
 		addOption(option);
-
+		
+		#if android
+		var option:Option = new Option('Four-Lane Hitbox', 'Splits the screen into four touch lanes. Disable to use the directional pad.', 'mobileFourLaneHitbox', 'bool', true);
+		addOption(option);
+		
+		var option:Option = new Option('Show Hitboxes', 'Shows the four touch lanes. When disabled, the invisible lanes still respond to touch.', 'mobileShowHitboxes', 'bool', true);
+		addOption(option);
+		#end
+		
+		var option:Option = new Option('Ghost Tapping', "Removes penalty for hitting keys when no notes are present", 'ghostTapping', 'bool', true);
+		addOption(option);
+		
 		var option:Option = new Option('Disable Reset Button', "Disables the Reset button", 'noReset', 'bool', false);
 		addOption(option);
-
-		var option:Option = new Option('Controller Mode', 'Enables controller support',
-			'controllerMode', 'bool', false);
-		addOption(option);
-
-		/*
-		var option:Option = new Option('Mechanics', 'Check this if you want to enable mechanics!',
-		'mechanics', 'bool', true);
-		addOption(option);*/
-
-
-
 		
-
+		var option:Option = new Option('Controller Mode', 'Enables controller support', 'controllerMode', 'bool', false);
+		addOption(option);
+		
+		/*
+			var option:Option = new Option('Mechanics', 'Check this if you want to enable mechanics!',
+			'mechanics', 'bool', true);
+			addOption(option); */
+		
 		super();
 	}
-
+	
 	function onChangeHitsoundVolume()
 	{
 		FlxG.sound.play(Paths.sound('hitsound'), ClientPrefs.hitsoundVolume);
 	}
-
+	
 	function addHitWindowOption(dName:String, prefID:String, min:Float = 15.0, max:Float = 200.0, scrollSpeed:Float = 15)
 	{
-		var option:Option = new Option('$dName Hit Window', 'Changes the amount of time you have\nfor hitting a "$dName" in milliseconds.', prefID, 'float',
-			max);
+		var option:Option = new Option('$dName Hit Window', 'Changes the amount of time you have\nfor hitting a "$dName" in milliseconds.', prefID, 'float', max);
 		option.displayFormat = '%vms';
 		option.scrollSpeed = scrollSpeed;
 		option.minValue = min;

@@ -85,6 +85,7 @@
 		<architecture exclude="armv7" />
 		<assets path=".android/manifest.json" rename="android-manifest.json" type="text" />
 		<define name="RELEASE_BUILD" />
+		<haxedef name="MOBILE_CONTROLS" />
 	</section>
 
 	<!-- _______________________________ Libraries ______________________________ -->

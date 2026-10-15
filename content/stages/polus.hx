@@ -912,7 +912,7 @@ function buildMeltdownBG()
 	redtalk.zIndex = 6;
 	add(redtalk);
 	
-	bftalk = new BGSprite(null, 1025, 140).loadSparrowFrames(ext + "meltdown/BFSpeech1");
+	bftalk = new BGSprite(null, 1025, 140).loadSparrowFrames(ext + "meltdown/BfSpeech1");
 	bftalk.animation.addByPrefix('1', 'bf1', 24, false);
 	bftalk.animation.addByPrefix('2', 'bf2', 24, false);
 	bftalk.animation.addByPrefix('3', 'bf3', 24, false);
@@ -957,7 +957,7 @@ function buildMeltdownBG()
 	
 	greenTable.zIndex = 14;
 	
-	investigationText = new FlxText(180, 1000, 480, "Investigation ends in 0", true);
+	investigationText = new FlxText(180, 1000, 480, "Investigation ends in 0", 24);
 	investigationText.setFormat(Paths.font("bahn.ttf"), 24, 0xFFFFFF, "center");
 	investigationText.cameras = [game.camHUD];
 	investigationText.alpha = 1;

@@ -92,7 +92,11 @@ class InterpEX extends crowplexus.hscript.Interp
 		{
 			var v = Reflect.getProperty(parent, id);
 			if (v != null)
+			{
+				// Bare script calls such as refreshZ() still need their state receiver.
+				if (Reflect.isFunction(v)) return Reflect.makeVarArgs(args -> Reflect.callMethod(parent, v, args));
 				return v;
+			}
 		}
 
 		error(EUnknownVariable(id));

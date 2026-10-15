@@ -44,7 +44,7 @@ class SwipeTransition extends BaseTransitionState
 
 	override function create()
 	{
-		var cam = FlxG.cameras.list[FlxG.cameras.list.length - 1];
+		var cam = funkin.utils.CameraUtil.lastCamera;
 		cameras = [cam];
 
 		var yStart:Float = 0;

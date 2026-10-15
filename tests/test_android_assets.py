@@ -1,5 +1,6 @@
 import importlib.util
 import hashlib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -60,6 +61,27 @@ class AndroidAssetsTest(unittest.TestCase):
             self.assertEqual(first, module.build_manifest())
             (module.ROOT / "content/stages/polus.hx").write_text("function create() { trace('changed'); }")
             self.assertNotEqual(first["version"], module.build_manifest()["version"])
+
+
+class AssetCaseTest(unittest.TestCase):
+    def test_atlas_pairs_and_character_images_use_exact_case(self):
+        # Android's extracted filesystem is case-sensitive, unlike many dev PCs.
+        root = Path(__file__).resolve().parents[1]
+        image_dirs = [root / "content/images", root / "assets/shared/images", root / "assets/embeds/shared/images"]
+        images = {str(path).lower(): path for directory in image_dirs for path in directory.rglob("*.png")}
+        for directory in image_dirs:
+            for atlas in directory.rglob("*.xml"):
+                expected = atlas.with_suffix(".png")
+                if str(expected).lower() in images:
+                    self.assertTrue(expected.is_file(), f"Atlas/image case mismatch: {atlas}")
+        for character in (root / "content/characters").glob("*.json"):
+            image = json.loads(character.read_text()).get("image")
+            if not image:
+                continue
+            for directory in image_dirs:
+                expected = directory / (image + ".png")
+                if str(expected).lower() in images:
+                    self.assertTrue(expected.is_file(), f"Character image case mismatch: {character}: {image}")
 
 
 if __name__ == "__main__":

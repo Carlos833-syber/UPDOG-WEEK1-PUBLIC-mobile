@@ -130,127 +130,127 @@ class Controls extends FlxActionSet
 
 	public var UI_UP(get, never):Bool;
 
-	inline function get_UI_UP() return _ui_up.check();
+	inline function get_UI_UP() return readAction(_ui_up);
 
 	public var UI_LEFT(get, never):Bool;
 
-	inline function get_UI_LEFT() return _ui_left.check();
+	inline function get_UI_LEFT() return readAction(_ui_left);
 
 	public var UI_RIGHT(get, never):Bool;
 
-	inline function get_UI_RIGHT() return _ui_right.check();
+	inline function get_UI_RIGHT() return readAction(_ui_right);
 
 	public var UI_DOWN(get, never):Bool;
 
-	inline function get_UI_DOWN() return _ui_down.check();
+	inline function get_UI_DOWN() return readAction(_ui_down);
 
 	public var UI_UP_P(get, never):Bool;
 
-	inline function get_UI_UP_P() return _ui_upP.check();
+	inline function get_UI_UP_P() return readAction(_ui_upP);
 
 	public var UI_LEFT_P(get, never):Bool;
 
-	inline function get_UI_LEFT_P() return _ui_leftP.check();
+	inline function get_UI_LEFT_P() return readAction(_ui_leftP);
 
 	public var UI_RIGHT_P(get, never):Bool;
 
-	inline function get_UI_RIGHT_P() return _ui_rightP.check();
+	inline function get_UI_RIGHT_P() return readAction(_ui_rightP);
 
 	public var UI_DOWN_P(get, never):Bool;
 
-	inline function get_UI_DOWN_P() return _ui_downP.check();
+	inline function get_UI_DOWN_P() return readAction(_ui_downP);
 
 	public var UI_UP_R(get, never):Bool;
 
-	inline function get_UI_UP_R() return _ui_upR.check();
+	inline function get_UI_UP_R() return readAction(_ui_upR);
 
 	public var UI_LEFT_R(get, never):Bool;
 
-	inline function get_UI_LEFT_R() return _ui_leftR.check();
+	inline function get_UI_LEFT_R() return readAction(_ui_leftR);
 
 	public var UI_RIGHT_R(get, never):Bool;
 
-	inline function get_UI_RIGHT_R() return _ui_rightR.check();
+	inline function get_UI_RIGHT_R() return readAction(_ui_rightR);
 
 	public var UI_DOWN_R(get, never):Bool;
 
-	inline function get_UI_DOWN_R() return _ui_downR.check();
+	inline function get_UI_DOWN_R() return readAction(_ui_downR);
 
 	public var NOTE_UP(get, never):Bool;
 
-	inline function get_NOTE_UP() return _note_up.check();
+	inline function get_NOTE_UP() return readAction(_note_up);
 
 	public var NOTE_LEFT(get, never):Bool;
 
-	inline function get_NOTE_LEFT() return _note_left.check();
+	inline function get_NOTE_LEFT() return readAction(_note_left);
 
 	public var NOTE_RIGHT(get, never):Bool;
 
-	inline function get_NOTE_RIGHT() return _note_right.check();
+	inline function get_NOTE_RIGHT() return readAction(_note_right);
 
 	public var NOTE_DOWN(get, never):Bool;
 
-	inline function get_NOTE_DOWN() return _note_down.check();
+	inline function get_NOTE_DOWN() return readAction(_note_down);
 
 	public var NOTE_UP_P(get, never):Bool;
 
-	inline function get_NOTE_UP_P() return _note_upP.check();
+	inline function get_NOTE_UP_P() return readAction(_note_upP);
 
 	public var NOTE_LEFT_P(get, never):Bool;
 
-	inline function get_NOTE_LEFT_P() return _note_leftP.check();
+	inline function get_NOTE_LEFT_P() return readAction(_note_leftP);
 
 	public var NOTE_RIGHT_P(get, never):Bool;
 
-	inline function get_NOTE_RIGHT_P() return _note_rightP.check();
+	inline function get_NOTE_RIGHT_P() return readAction(_note_rightP);
 
 	public var NOTE_DOWN_P(get, never):Bool;
 
-	inline function get_NOTE_DOWN_P() return _note_downP.check();
+	inline function get_NOTE_DOWN_P() return readAction(_note_downP);
 
 	public var NOTE_UP_R(get, never):Bool;
 
-	inline function get_NOTE_UP_R() return _note_upR.check();
+	inline function get_NOTE_UP_R() return readAction(_note_upR);
 
 	public var NOTE_LEFT_R(get, never):Bool;
 
-	inline function get_NOTE_LEFT_R() return _note_leftR.check();
+	inline function get_NOTE_LEFT_R() return readAction(_note_leftR);
 
 	public var NOTE_RIGHT_R(get, never):Bool;
 
-	inline function get_NOTE_RIGHT_R() return _note_rightR.check();
+	inline function get_NOTE_RIGHT_R() return readAction(_note_rightR);
 
 	public var NOTE_DOWN_R(get, never):Bool;
 
-	inline function get_NOTE_DOWN_R() return _note_downR.check();
+	inline function get_NOTE_DOWN_R() return readAction(_note_downR);
 
 	public var ACCEPT(get, never):Bool;
 
-	inline function get_ACCEPT() return _accept.check();
+	inline function get_ACCEPT() return readAction(_accept);
 
 	public var BACK(get, never):Bool;
 
-	inline function get_BACK() return _back.check();
+	inline function get_BACK() return readAction(_back);
 
 	public var PAUSE(get, never):Bool;
 
-	inline function get_PAUSE() return _pause.check();
+	inline function get_PAUSE() return readAction(_pause);
 
 	public var RESET(get, never):Bool;
 
-	inline function get_RESET() return _reset.check();
+	inline function get_RESET() return readAction(_reset);
 
 	public var NOTE_DODGE(get, never):Bool;
 
-	inline function get_NOTE_DODGE() return _note_dodge.check();
+	inline function get_NOTE_DODGE() return readAction(_note_dodge);
 
 	public var NOTE_DODGE_P(get, never):Bool;
 
-	inline function get_NOTE_DODGE_P() return _note_dodgeP.check();
+	inline function get_NOTE_DODGE_P() return readAction(_note_dodgeP);
 
 	public var NOTE_DODGE_R(get, never):Bool;
 
-	inline function get_NOTE_DODGE_R() return _note_dodgeR.check();
+	inline function get_NOTE_DODGE_R() return readAction(_note_dodgeR);
 
 	public function new(name, scheme = None)
 	{
@@ -280,6 +280,9 @@ class Controls extends FlxActionSet
 		add(_note_leftR);
 		add(_note_rightR);
 		add(_note_downR);
+		add(_note_dodge);
+		add(_note_dodgeP);
+		add(_note_dodgeR);
 		add(_accept);
 		add(_back);
 		add(_pause);
@@ -302,7 +305,12 @@ class Controls extends FlxActionSet
 		#if debug
 		if (!byName.exists(name)) throw 'Invalid name: $name';
 		#end
-		return byName[name].check();
+		return readAction(byName[name]);
+	}
+
+	inline function readAction(action:FlxActionDigital):Bool
+	{
+		return action.check() #if MOBILE_CONTROLS || funkin.mobile.TouchControls.check(action.name) #end;
 	}
 
 	public function getDialogueName(action:FlxActionDigital):String

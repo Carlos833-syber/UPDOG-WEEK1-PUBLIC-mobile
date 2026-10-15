@@ -184,7 +184,7 @@ function onCreate()
 	
 	struct.detectiveUI = detectiveUI;
 	
-	investigationText = new FlxText(180, 1000, 480, "Investigation ends in 0", true);
+	investigationText = new FlxText(180, 1000, 480, "Investigation ends in 0", 24);
 	investigationText.setFormat(Paths.font("bahn.ttf"), 24, 0xFFFFFF, "center");
 	investigationText.cameras = [game.camHUD];
 	investigationText.alpha = 1;

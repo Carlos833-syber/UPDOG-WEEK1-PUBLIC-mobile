@@ -40,12 +40,14 @@ storage for both the APK and its extracted game files. The first launch displays
 file preparation progress. Updates replace changed bundled files; game saves are
 kept separately. No shared-storage permission or manual asset download is needed.
 
-Touch controls: a directional pad and **A/B** buttons navigate menus. During songs,
-four full-height touch lanes support simultaneous notes and holds; **PAUSE**,
+Touch controls use the Psych mobile directional pad artwork and **A/B** buttons
+in menus. During songs, four touch lanes below the action strip support
+simultaneous notes and holds; **PAUSE**,
 **BACK** and **DODGE** are at the top. In **Options → Gameplay Settings**, enable
 **Middlescroll**, toggle **Four-Lane Hitbox**, or disable **Show Hitboxes** to hide
 the lanes while keeping touch input active. Disabling Four-Lane Hitbox uses the
-directional pad during gameplay. The buttons follow the configured key bindings.
+Psych directional pad during gameplay. Touch states feed Controls and the note
+handlers directly, independently of keyboard rebinding or Controller Mode.
 New Android installations default to low quality to reduce stage texture memory;
 existing saved quality settings are preserved. Keyboard/gamepad support remains
 available. Desktop editors are not
@@ -83,3 +85,29 @@ Before distributing, test all three songs on a real device, including holds,
 chords, dodging, cutscenes, pause/resume, background/foreground transitions and
 save persistence. A successful build does not verify graphics, audio timing or
 performance on hardware. The old desktop workflow remains manual-only.
+
+### Native gameplay and touch smoke tests
+
+With the pinned Haxe libraries, a C++ compiler and Lime's Linux dependencies:
+
+```sh
+haxelib run lime build tests/runtime/project.xml linux -release
+cd export/smoke/linux/bin
+ALSOFT_DRIVERS=null SMOKE_SONG=sussus-moogus ./updog-smoke
+ALSOFT_DRIVERS=null SMOKE_SONG=sabotage ./updog-smoke
+ALSOFT_DRIVERS=null SMOKE_SONG=meltdown ./updog-smoke
+ALSOFT_DRIVERS=null SMOKE_MODE=touch ./updog-smoke
+ALSOFT_DRIVERS=null SMOKE_MODE=game-touch ./updog-smoke
+ALSOFT_DRIVERS=null SMOKE_MODE=reentry SMOKE_SONG=sussus-moogus ./updog-smoke
+```
+
+Use `xvfb-run -a` before the executable on a headless host. `SMOKE_HARD=1`
+selects the hard chart and `SMOKE_QUALITY=high` includes optional stage graphics.
+These tests run the actual states, textures, audio loading and HScript callbacks;
+the touch probes dispatch OpenFL events through FlxTouchManager and the production
+controls. Reentry mode enters the chosen song three times, returning through the
+actual Freeplay menu between entries. Native video is replaced by a test double that fails if requested;
+Discord presence is disabled by a separate test double. These desktop C++ checks
+do not verify Android hardware, native video, complete-song progression or audio
+latency. Neko can run the isolated menu-touch probe, but its native Vector
+representation is incompatible with the game's reflected HScript vectors.

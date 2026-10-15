@@ -36,6 +36,9 @@ class Init extends FlxState
 		FlxG.save.bind('funkin', CoolUtil.getSavePath());
 		
 		ClientPrefs.loadPrefs();
+		#if MOBILE_CONTROLS
+		funkin.mobile.TouchControls.install();
+		#end
 		
 		funkin.data.Highscore.load();
 		

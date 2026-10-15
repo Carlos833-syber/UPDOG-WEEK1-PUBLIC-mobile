@@ -1582,6 +1582,16 @@ class PlayState extends MusicBeatState
 		return events;
 	}
 	
+	/** Legacy charts omit the fourth item for ordinary notes. */
+	static function resolveNoteType(value:Dynamic):String
+	{
+		if (value == null) return '';
+		if (Std.isOfType(value, String)) return value;
+		if (!Std.isOfType(value, Int) && !Std.isOfType(value, Float)) return '';
+		var index = Std.int(value);
+		return index >= 0 && index < ChartingState.noteTypeList.length ? ChartingState.noteTypeList[index] : '';
+	}
+	
 	function generateSong(dataPath:String):Void
 	{
 		songSpeedType = ClientPrefs.getGameplaySetting('scrolltype', 'Multiplicative');
@@ -1641,8 +1651,7 @@ class PlayState extends MusicBeatState
 		{
 			for (songNotes in section.sectionNotes)
 			{
-				var type:Dynamic = songNotes[3];
-				if (!Std.isOfType(type, String)) type = ChartingState.noteTypeList[type];
+				var type:String = resolveNoteType(songNotes[3]);
 				
 				if (!noteTypeMap.exists(type))
 				{
@@ -1788,8 +1797,7 @@ class PlayState extends MusicBeatState
 				var pixelStage = isPixelStage;
 				// var skin = arrowSkin;
 				
-				var type:Dynamic = songNotes[3];
-				if (!Std.isOfType(type, String)) type = ChartingState.noteTypeList[type];
+				var type:String = resolveNoteType(songNotes[3]);
 				
 				// TODO: maybe make a checkNoteType n shit but idfk im lazy
 				// or maybe make a "Transform Notes" event which'll make notes which don't change texture change into the specified one
@@ -3606,85 +3614,87 @@ class PlayState extends MusicBeatState
 	function onKeyPress(event:KeyboardEvent):Void
 	{
 		var eventKey:FlxKey = event.keyCode;
-		var key:Int = getKeyFromEvent(eventKey);
-		// trace('Pressed: ' + eventKey);
-		if (cpuControlled || paused || !startedCountdown) return;
-		
-		if (key > -1 && (FlxG.keys.checkStatus(eventKey, JUST_PRESSED) || ClientPrefs.controllerMode))
+		if (FlxG.keys.checkStatus(eventKey, JUST_PRESSED)) notePressed(getKeyFromEvent(eventKey));
+	}
+	
+	function notePressed(key:Int):Void
+	{
+		if (cpuControlled || paused || !startedCountdown || key < 0 || key >= keysArray.length) return;
+		if (!boyfriend.stunned && generatedMusic && !endingSong)
 		{
-			if (!boyfriend.stunned && generatedMusic && !endingSong)
-			{
-				// more accurate hit time for the ratings?
-				var lastTime:Float = Conductor.songPosition;
-				Conductor.songPosition = FlxG.sound.music.time;
-				
-				var canMiss:Bool = !ClientPrefs.ghostTapping;
-				
-				var pressNotes:Array<Note> = [];
-				
-				var ghostTapped:Bool = true;
-				for (field in playFields.members)
-				{
-					if (field.playerControls && field.inControl && !field.autoPlayed)
-					{
-						var sortedNotesList:Array<Note> = field.getTapNotes(key);
-						sortedNotesList.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
-						
-						if (sortedNotesList.length > 0)
-						{
-							pressNotes.push(sortedNotesList[0]);
-							field.noteHitCallback(sortedNotesList[0], field);
-						}
-					}
-				}
-				
-				if (pressNotes.length == 0)
-				{
-					callOnScripts('onGhostTap', [key]);
-					if (canMiss)
-					{
-						noteMissPress(key);
-						callOnScripts('noteMissPress', [key]);
-					}
-				}
-				
-				// I dunno what you need this for but here you go
-				//									- Shubs
-				
-				// Shubs, this is for the "Just the Two of Us" achievement lol
-				//									- Shadow Mario
-				
-				// LOOOOOL
-				// 									- ava
-				keysPressed[key] = true;
-				
-				// more accurate hit time for the ratings? part 2 (Now that the calculations are done, go back to the time it was before for not causing a note stutter)
-				Conductor.songPosition = lastTime;
-			}
+			// more accurate hit time for the ratings?
+			var lastTime:Float = Conductor.songPosition;
+			Conductor.songPosition = FlxG.sound.music.time;
 			
+			var canMiss:Bool = !ClientPrefs.ghostTapping;
+			
+			var pressNotes:Array<Note> = [];
+			
+			var ghostTapped:Bool = true;
 			for (field in playFields.members)
 			{
-				if (field.inControl && !field.autoPlayed && field.playerControls)
+				if (field.playerControls && field.inControl && !field.autoPlayed)
 				{
-					var spr:StrumNote = field.members[key];
-					if (spr != null && spr.animation.curAnim.name != 'confirm')
+					var sortedNotesList:Array<Note> = field.getTapNotes(key);
+					sortedNotesList.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
+					
+					if (sortedNotesList.length > 0)
 					{
-						spr.playAnim('pressed');
-						spr.resetAnim = 0;
+						pressNotes.push(sortedNotesList[0]);
+						field.noteHitCallback(sortedNotesList[0], field);
 					}
 				}
 			}
 			
-			callOnScripts('onKeyPress', [key]);
+			if (pressNotes.length == 0)
+			{
+				callOnScripts('onGhostTap', [key]);
+				if (canMiss)
+				{
+					noteMissPress(key);
+					callOnScripts('noteMissPress', [key]);
+				}
+			}
+			
+			// I dunno what you need this for but here you go
+			//									- Shubs
+			
+			// Shubs, this is for the "Just the Two of Us" achievement lol
+			//									- Shadow Mario
+			
+			// LOOOOOL
+			// 									- ava
+			keysPressed[key] = true;
+			
+			// more accurate hit time for the ratings? part 2 (Now that the calculations are done, go back to the time it was before for not causing a note stutter)
+			Conductor.songPosition = lastTime;
 		}
+		
+		for (field in playFields.members)
+		{
+			if (field.inControl && !field.autoPlayed && field.playerControls)
+			{
+				var spr:StrumNote = field.members[key];
+				if (spr != null && spr.animation.curAnim.name != 'confirm')
+				{
+					spr.playAnim('pressed');
+					spr.resetAnim = 0;
+				}
+			}
+		}
+		
+		callOnScripts('onKeyPress', [key]);
 		// trace('pressed: ' + controlArray);
 	}
 	
 	function onKeyRelease(event:KeyboardEvent):Void
 	{
-		var eventKey:FlxKey = event.keyCode;
-		var key:Int = getKeyFromEvent(eventKey);
-		if (startedCountdown && !paused && key > -1)
+		noteReleased(getKeyFromEvent(event.keyCode));
+	}
+	
+	function noteReleased(key:Int):Void
+	{
+		if (startedCountdown && !paused && key >= 0 && key < keysArray.length)
 		{
 			for (field in playFields.members)
 			{
@@ -3734,7 +3744,9 @@ class PlayState extends MusicBeatState
 		var controlHoldArray:Array<Bool> = [left, down, up, right, dodge];
 		
 		// TO DO: Find a better way to handle controller inputs, this should work for now
+		#if !MOBILE_CONTROLS
 		if (ClientPrefs.controllerMode)
+		#end
 		{
 			var controlArray:Array<Bool> = [
 				controls.NOTE_LEFT_P,
@@ -3746,7 +3758,7 @@ class PlayState extends MusicBeatState
 			{
 				for (i in 0...controlArray.length)
 				{
-					if (controlArray[i]) onKeyPress(new KeyboardEvent(KeyboardEvent.KEY_DOWN, true, true, -1, keysArray[i][0]));
+					if (controlArray[i] && (ClientPrefs.controllerMode #if MOBILE_CONTROLS || funkin.mobile.TouchControls.noteEdge(i, false) #end)) notePressed(i);
 				}
 			}
 		}
@@ -3792,7 +3804,9 @@ class PlayState extends MusicBeatState
 		}
 		
 		// TO DO: Find a better way to handle controller inputs, this should work for now
+		#if !MOBILE_CONTROLS
 		if (ClientPrefs.controllerMode)
+		#end
 		{
 			var controlArray:Array<Bool> = [
 				controls.NOTE_LEFT_R,
@@ -3804,7 +3818,7 @@ class PlayState extends MusicBeatState
 			{
 				for (i in 0...controlArray.length)
 				{
-					if (controlArray[i]) onKeyRelease(new KeyboardEvent(KeyboardEvent.KEY_UP, true, true, -1, keysArray[i][0]));
+					if (controlArray[i] && (ClientPrefs.controllerMode #if MOBILE_CONTROLS || funkin.mobile.TouchControls.noteEdge(i, true) #end)) noteReleased(i);
 				}
 			}
 		}
@@ -4831,7 +4845,7 @@ class PlayState extends MusicBeatState
 	}
 	
 	public var ratingName:String = '?';
-	public var ratingPercent:Float;
+	public var ratingPercent:Float = 0;
 	public var ratingFC:String;
 	
 	public function RecalculateRating(badHit:Bool = false)

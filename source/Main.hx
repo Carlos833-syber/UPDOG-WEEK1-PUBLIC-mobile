@@ -60,9 +60,6 @@ class Main extends Sprite
 		game._customSoundTray = funkin.objects.FunkinSoundTray;
 		addChild(game);
 
-		#if android
-		addChild(new funkin.mobile.TouchControls());
-		#end
 
 		#if !mobile
 		fpsVar = new DebugDisplay(10, 3, 0xFFFFFF);
@@ -234,7 +231,15 @@ class FNFGame extends FlxGame
 
 		final crashReport = 'Error caught:' + e.message + '\nCallstack:\n' + emsg;
 
+		#if android
+		try
+			sys.io.File.saveContent(lime.system.System.applicationStorageDirectory + '/last-crash.txt', crashReport)
+		catch (_:Dynamic) {}
+		flixel.addons.transition.FlxTransitionableState.skipNextTransIn = true;
+		FlxG.switchState(() -> new funkin.mobile.AndroidCrashState(crashReport));
+		#else
 		FlxG.switchState(new funkin.backend.FallbackState(crashReport, () -> FlxG.switchState(() -> new TitleState())));
+		#end
 	}
 }
 #end

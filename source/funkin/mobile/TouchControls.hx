@@ -1,204 +1,194 @@
 package funkin.mobile;
 
-#if android
-import flixel.input.keyboard.FlxKey;
+#if MOBILE_CONTROLS
+import flixel.input.FlxInput.FlxInputState;
 
-import openfl.display.Sprite;
-import openfl.events.Event;
-import openfl.events.KeyboardEvent;
-import openfl.events.TouchEvent;
-import openfl.geom.Rectangle;
-import openfl.text.TextField;
-import openfl.text.TextFormat;
-import openfl.ui.Multitouch;
-import openfl.ui.MultitouchInputMode;
+import funkin.mobile.psych.MobileHitbox;
+import funkin.mobile.psych.MobileVirtualPad;
+import funkin.mobile.psych.TouchButton;
+import funkin.mobile.psych.TouchInputID;
+import funkin.mobile.psych.TouchInputManager;
 
-/** Multi-touch overlay feeding the same keyboard path as physical controls. */
-class TouchControls extends Sprite
+/** Psych mobile controls, polled before the active state rather than emulating keys. */
+class TouchControls extends FlxBasic
 {
-	var buttons:Array<Sprite> = [];
-	var labels:Array<TextField> = [];
-	var bounds:Array<Rectangle> = [];
-	var fourLanes:Bool = false;
-	var showHitboxes:Bool = true;
-	var fingers:Map<Int, Int> = [];
-	var held:Map<Int, Int> = [];
-	var gameplay:Bool = false;
+	public static var instance(default, null):TouchControls;
+	
+	var pad:MobileVirtualPad;
+	var hitbox:MobileHitbox;
+	var actions:TouchInputManager;
+	
+	public var touchCamera(default, null):FlxCamera;
+	
 	var lastState:flixel.FlxState;
 	var lastSubState:flixel.FlxSubState;
+	var gameplay:Bool = false;
+	var fourLanes:Bool = false;
+	var waitingForRelease:Bool = false;
+	
+	public static function install():Void
+	{
+		if (instance == null) FlxG.plugins.add(instance = new TouchControls());
+	}
 	
 	public function new()
 	{
 		super();
-		mouseEnabled = false;
-		mouseChildren = false;
-		addEventListener(Event.ADDED_TO_STAGE, initialize);
+		FlxG.signals.preStateSwitch.add(reset);
+		FlxG.signals.postStateSwitch.add(refresh);
+		FlxG.signals.focusLost.add(reset);
+		FlxG.signals.gameResized.add(onResize);
 	}
 	
-	function initialize(_:Event):Void
+	function onResize(w:Int, h:Int):Void
 	{
-		Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
-		for (label in ["<", "v", "^", ">", "DODGE", "A", "B"])
-		{
-			var button = new Sprite();
-			var text = new TextField();
-			text.defaultTextFormat = new TextFormat("_sans", 22, 0xFFFFFF, true, null, null, "center");
-			text.text = label;
-			text.selectable = false;
-			button.addChild(text);
-			addChild(button);
-			buttons.push(button);
-			labels.push(text);
-			bounds.push(new Rectangle());
-		}
-		stage.addEventListener(TouchEvent.TOUCH_BEGIN, onTouch);
-		stage.addEventListener(TouchEvent.TOUCH_MOVE, onTouch);
-		stage.addEventListener(TouchEvent.TOUCH_END, endTouch);
-		stage.addEventListener(Event.DEACTIVATE, releaseAll);
-		stage.addEventListener(Event.RESIZE, resize);
-		FlxG.signals.preStateSwitch.add(() -> releaseAll(null));
-		FlxG.signals.postUpdate.add(refresh);
-		resize(null);
+		lastState = null;
+	}
+	
+	function reset():Void
+	{
+		for (group in [cast pad, cast hitbox, actions])
+			if (group != null) for (button in group.members)
+				button.resetInput();
+		waitingForRelease = true;
 	}
 	
 	function refresh():Void
 	{
 		var state = FlxG.state;
 		var playing = Std.isOfType(state, PlayState) && state.subState == null && !PlayState.instance.paused;
-		if (state != lastState
-			|| state.subState != lastSubState
-			|| playing != gameplay
-			|| fourLanes != ClientPrefs.mobileFourLaneHitbox
-			|| showHitboxes != ClientPrefs.mobileShowHitboxes)
+		if (state == lastState
+			&& state.subState == lastSubState
+			&& playing == gameplay
+			&& fourLanes == ClientPrefs.mobileFourLaneHitbox) return;
+		reset();
+		lastState = state;
+		lastSubState = state.subState;
+		gameplay = playing;
+		fourLanes = ClientPrefs.mobileFourLaneHitbox;
+		if (pad != null) pad.destroy();
+		if (hitbox != null) hitbox.destroy();
+		if (actions != null) actions.destroy();
+		if (touchCamera != null && FlxG.cameras.list.contains(touchCamera)) FlxG.cameras.remove(touchCamera);
+		touchCamera = new FlxCamera();
+		touchCamera.bgColor = 0;
+		FlxG.cameras.add(touchCamera, false);
+		pad = new MobileVirtualPad(!gameplay || !fourLanes, !gameplay);
+		hitbox = new MobileHitbox();
+		actions = new TouchInputManager();
+		if (gameplay)
 		{
-			releaseAll(null);
-			lastState = state;
-			lastSubState = state.subState;
-			gameplay = playing;
-			fourLanes = ClientPrefs.mobileFourLaneHitbox;
-			showHitboxes = ClientPrefs.mobileShowHitboxes;
-			labels[5].text = gameplay ? "PAUSE" : "A";
-			labels[6].text = gameplay ? "BACK" : "B";
-			resize(null);
+			addAction(FlxG.width - 180, 'PAUSE', A);
+			addAction(FlxG.width - 360, 'BACK', B);
+			addAction(0, 'DODGE', C);
 		}
-		visible = !Std.isOfType(state, AndroidBootstrap);
-		buttons[4].visible = gameplay;
-		for (i in 0...buttons.length)
+		actions.refreshMappedButtons();
+		for (group in [pad, hitbox, actions])
+			group.cameras = [touchCamera];
+	}
+	
+	function addAction(x:Float, label:String, id:TouchInputID):Void
+	{
+		var button = new TouchButton(x, 0, [id], label);
+		button.makeGraphic(170, 90, 0xCC202020);
+		button.label.setFormat(Paths.font('vcr.ttf'), 25, FlxColor.WHITE, CENTER);
+		button.alpha = 0.7;
+		actions.add(button);
+	}
+	
+	override public function update(elapsed:Float):Void
+	{
+		refresh();
+		if (waitingForRelease)
 		{
-			var pressed = held.exists(keyFor(i));
-			buttons[i].alpha = gameplay && i < 4 && fourLanes ? (showHitboxes ? (pressed ? 0.45 : 0.12) : 0) : (pressed ? 1 : 0.65);
+			// A held menu-confirm finger must not become a note or pause press.
+			for (touch in FlxG.touches.list)
+				if (touch.pressed) return;
+			waitingForRelease = false;
 		}
-	}
-	
-	function resize(_:Event):Void
-	{
-		releaseAll(null);
-		var w = stage.stageWidth;
-		var h = stage.stageHeight;
-		var size = Math.min(w / 8, h / 5);
-		var gap = 8.0;
-		var padX = 12.0;
-		var padY = h - 2 * size - gap - 12;
-		var colors = [0xC24B99, 0x00FFFF, 0x12FA05, 0xF9393F];
-		for (i in 0...buttons.length)
+		if (gameplay)
 		{
-			var button = buttons[i];
-			var lane = gameplay && fourLanes && i < 4;
-			var width = lane ? w / 4 : size;
-			var height = lane ? h : size;
-			if (lane)
-			{
-				button.x = i * width;
-				button.y = 0;
-			}
-			else if (i < 4)
-			{
-				// A directional pad at the left, with up above down.
-				button.x = padX + (i == 0 ? 0 : i == 3 ? 2 : 1) * (size + gap);
-				button.y = padY + (i == 2 ? 0 : size + gap);
-			}
-			else
-			{
-				button.x = w - (7 - i) * (size + gap) - 12;
-				button.y = gameplay ? 12 : h - size - 12 - (i == 5 ? size * 0.6 : 0);
-			}
-			bounds[i].setTo(button.x, button.y, width, height);
-			button.graphics.clear();
-			button.graphics.beginFill(i < 4 ? colors[i] : i == 5 ? 0x12FA05 : 0xF9393F);
-			button.graphics.lineStyle(2, 0xFFFFFF, 0.8);
-			if (lane) button.graphics.drawRect(0, 0, width, height);
-			else button.graphics.drawRoundRect(0, 0, width, height, 12);
-			button.graphics.endFill();
-			var fontSize = Std.int(size / (i < 4 || !gameplay ? 2 : 5));
-			var format = new TextFormat("_sans", fontSize, 0xFFFFFF, true, null, null, "center");
-			labels[i].defaultTextFormat = format;
-			labels[i].setTextFormat(format);
-			labels[i].width = width;
-			labels[i].height = size;
-			labels[i].y = lane ? height - size : (size - fontSize * 1.4) / 2;
+			if (fourLanes) hitbox.update(elapsed);
+			else pad.update(elapsed);
+			actions.update(elapsed);
 		}
+		else pad.update(elapsed);
 	}
 	
-	function keyFor(button:Int):Int
+	override public function draw():Void
 	{
-		var names = gameplay ? ["note_left", "note_down", "note_up", "note_right", "dodge", "pause", "back"] : ["ui_left", "ui_down", "ui_up", "ui_right", "dodge", "accept", "back"];
-		var keys = ClientPrefs.keyBinds.get(names[button]);
-		if (keys != null) for (key in keys)
-			if (key != FlxKey.NONE) return key;
-		return -1;
+		if (touchCamera == null) return;
+		if (!gameplay || !fourLanes) pad.draw();
+		else hitbox.draw();
+		if (gameplay) actions.draw();
 	}
 	
-	function onTouch(event:TouchEvent):Void
+	static final noteActions = ['note_left', 'note_down', 'note_up', 'note_right'];
+	
+	public static function noteEdge(lane:Int, released:Bool):Bool
 	{
-		var key = -1;
-		if (visible)
+		return check(noteActions[lane] + (released ? '-release' : '-press'));
+	}
+	
+	public static function check(action:String):Bool
+	{
+		var self = instance;
+		if (self == null || self.pad == null || self.waitingForRelease) return false;
+		var state:FlxInputState = PRESSED;
+		var name = action;
+		if (action.endsWith('-press'))
 		{
-			// Action buttons take priority over the full-height note lanes.
-			for (offset in 0...buttons.length)
-			{
-				var i = buttons.length - 1 - offset;
-				var button = buttons[i];
-				if (button.visible && bounds[i].contains(event.stageX, event.stageY))
-				{
-					key = keyFor(i);
-					break;
-				}
-			}
+			name = action.substr(0, action.length - 6);
+			state = JUST_PRESSED;
 		}
-		if (fingers.exists(event.touchPointID) && fingers.get(event.touchPointID) == key) return;
-		endTouch(event);
-		if (key < 0) return;
-		fingers.set(event.touchPointID, key);
-		var count = held.exists(key) ? held.get(key) : 0;
-		held.set(key, count + 1);
-		if (count == 0) sendKey(key, true);
-	}
-	
-	function endTouch(event:TouchEvent):Void
-	{
-		if (!fingers.exists(event.touchPointID)) return;
-		var key = fingers.get(event.touchPointID);
-		fingers.remove(event.touchPointID);
-		var count = held.get(key) - 1;
-		if (count <= 0)
+		else if (action.endsWith('-release'))
 		{
-			held.remove(key);
-			sendKey(key, false);
+			name = action.substr(0, action.length - 8);
+			state = JUST_RELEASED;
 		}
-		else held.set(key, count);
+		var id:TouchInputID = switch (name)
+		{
+			case 'ui_left': LEFT;
+			case 'ui_down': DOWN;
+			case 'ui_up': UP;
+			case 'ui_right': RIGHT;
+			case 'note_left': self.fourLanes ? NOTE_LEFT : LEFT;
+			case 'note_down': self.fourLanes ? NOTE_DOWN : DOWN;
+			case 'note_up': self.fourLanes ? NOTE_UP : UP;
+			case 'note_right': self.fourLanes ? NOTE_RIGHT : RIGHT;
+			case 'accept', 'pause': A;
+			case 'back': B;
+			case 'note_dodge': C;
+			default: NONE;
+		};
+		if (name == 'pause' && self.gameplay && self.actions.isJustPressed(B)) return true;
+		if (name == 'accept' || name == 'back' || name == 'pause') state = JUST_PRESSED;
+		var group:TouchInputManager = self.gameplay ? (name.startsWith('note_')
+			&& name != 'note_dodge' ? (self.fourLanes ? self.hitbox : self.pad) : self.actions) : self.pad;
+		// Gameplay actions must not leak into menu/note bindings and vice versa.
+		if (self.gameplay && (name.startsWith('ui_') || name == 'accept')) return false;
+		if (!self.gameplay && (name.startsWith('note_') || name == 'pause')) return false;
+		return switch (state)
+		{
+			case JUST_PRESSED: group.isJustPressed(id);
+			case JUST_RELEASED: group.isJustReleased(id);
+			default: group.isPressed(id);
+		};
 	}
 	
-	function releaseAll(_:Event):Void
+	override public function destroy():Void
 	{
-		for (key in held.keys())
-			sendKey(key, false);
-		held.clear();
-		fingers.clear();
-	}
-	
-	function sendKey(key:Int, down:Bool):Void
-	{
-		stage.dispatchEvent(new KeyboardEvent(down ? KeyboardEvent.KEY_DOWN : KeyboardEvent.KEY_UP, true, false, 0, key));
+		FlxG.signals.preStateSwitch.remove(reset);
+		FlxG.signals.postStateSwitch.remove(refresh);
+		FlxG.signals.focusLost.remove(reset);
+		FlxG.signals.gameResized.remove(onResize);
+		reset();
+		if (pad != null) pad.destroy();
+		if (hitbox != null) hitbox.destroy();
+		if (actions != null) actions.destroy();
+		if (touchCamera != null && FlxG.cameras.list.contains(touchCamera)) FlxG.cameras.remove(touchCamera);
+		instance = null;
+		super.destroy();
 	}
 }
 #end

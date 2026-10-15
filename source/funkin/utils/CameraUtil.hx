@@ -13,8 +13,20 @@ class CameraUtil
 	**/
 	public static var lastCamera(get, never):FlxCamera;
 
-	static function get_lastCamera():FlxCamera return FlxG.cameras.list[FlxG.cameras.list.length - 1];
-
+	static function get_lastCamera():FlxCamera
+	{
+		var i = FlxG.cameras.list.length;
+		while (i-- > 0)
+		{
+			var cam = FlxG.cameras.list[i];
+			#if MOBILE_CONTROLS
+			if (cam == funkin.mobile.TouchControls.instance?.touchCamera) continue;
+			#end
+			return cam;
+		}
+		return FlxG.camera;
+	}
+	
 	public static inline function quickCreateCam(add:Bool = true):FlxCamera
 	{
 		var cam = new FlxCamera();

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <app title="UPDOG runtime smoke" file="updog-smoke" main="SongSmokeTest" />
+  <window width="1280" height="720" fps="60" hardware="true" />
+  <set name="BUILD_DIR" value="../../export/smoke" />
+  <classpath name="../../source" />
+  <classpath name="stubs" />
+  <classpath name="." />
+  <define name="MODS_ALLOWED" />
+  <haxedef name="MOBILE_CONTROLS" />
+  <haxedef name="RELEASE_BUILD" />
+  <haxedef name="DISCORD_ALLOWED" />
+  <haxedef name="FLX_NO_DEBUG" />
+  <haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
+  <haxedef name="hscriptPos" />
+  <assets path="../../assets/embeds" rename="assets" embed="false" />
+  <assets path="../../assets/fonts" rename="assets/fonts" />
+  <assets path="../../assets/shared" rename="assets/shared" exclude="*.mp3" />
+  <assets path="../../content" rename="content" embed="false" />
+  <lime version="8.1.3" />
+  <haxelib name="openfl" />
+  <haxelib name="flixel" />
+  <haxelib name="flixel-addons" />
+  <haxelib name="flixel-ui" />
+  <haxelib name="flixel-tools" />
+  <haxelib name="flxanimate" />
+  <haxelib name="hscript" />
+  <haxelib name="hscript-iris" />
+  <haxeflag name="--macro" value="addMetadata('@:build(funkin.utils.MacroUtil.buildFlxSprite())', 'flixel.FlxSprite')" />
+  <haxeflag name="--macro" value="addMetadata('@:build(funkin.utils.MacroUtil.buildFlxBasic())', 'flixel.FlxBasic')" />
+  <haxeflag name="--macro" value="include('funkin')" />
+  <haxeflag name="--macro" value="include('flixel.addons.effects')" />
+  <haxeflag name="-dce no" />
+</project>

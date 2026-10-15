@@ -6,7 +6,7 @@ import flixel.graphics.frames.FlxTileFrames;
 
 class MobileVirtualPad extends TouchInputManager
 {
-	public function new(directions:Bool = true, actionButtons:Bool = true)
+	public function new(directions:Bool = true, actionButtons:Bool = true, difficultyButton:Bool = false)
 	{
 		super();
 		if (directions)
@@ -21,6 +21,7 @@ class MobileVirtualPad extends TouchInputManager
 			addButton(FlxG.width - 258, FlxG.height - 135, 'b', 0xFFCB00, B);
 			addButton(FlxG.width - 132, FlxG.height - 135, 'a', 0xFF0000, A);
 		}
+		if (difficultyButton) addButton(FlxG.width - 384, FlxG.height - 135, 'c', 0x00FFFF, C);
 		scrollFactor.set();
 		refreshMappedButtons();
 	}

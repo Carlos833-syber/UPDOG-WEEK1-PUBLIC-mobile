@@ -42,8 +42,11 @@ kept separately. No shared-storage permission or manual asset download is needed
 
 Touch controls use the Psych mobile directional pad artwork and **A/B** buttons
 in menus. During songs, four touch lanes below the action strip support
-simultaneous notes and holds; **PAUSE**,
-**BACK** and **DODGE** are at the top. In **Options → Gameplay Settings**, enable
+simultaneous notes and holds. The pause icon and **C** are at the top; **C** opens
+the difficulty selector and choosing Normal or Hard restarts the current song.
+The pause menu follows FNF V-Slice's scrolling text layout with Resume, Restart
+Song, Change Difficulty, Enable Practice Mode and Exit to Menu. **C** also cycles
+Normal/Hard in Freeplay and Story selection. In **Options → Gameplay Settings**, enable
 **Middlescroll**, toggle **Four-Lane Hitbox**, or disable **Show Hitboxes** to hide
 the lanes while keeping touch input active. Disabling Four-Lane Hitbox uses the
 Psych directional pad during gameplay. Touch states feed Controls and the note
@@ -99,13 +102,17 @@ ALSOFT_DRIVERS=null SMOKE_SONG=meltdown ./updog-smoke
 ALSOFT_DRIVERS=null SMOKE_MODE=touch ./updog-smoke
 ALSOFT_DRIVERS=null SMOKE_MODE=game-touch ./updog-smoke
 ALSOFT_DRIVERS=null SMOKE_MODE=reentry SMOKE_SONG=sussus-moogus ./updog-smoke
+ALSOFT_DRIVERS=null SMOKE_MODE=middlescroll ./updog-smoke
+ALSOFT_DRIVERS=null SMOKE_MODE=menu-difficulty ./updog-smoke
 ```
 
 Use `xvfb-run -a` before the executable on a headless host. `SMOKE_HARD=1`
 selects the hard chart and `SMOKE_QUALITY=high` includes optional stage graphics.
 These tests run the actual states, textures, audio loading and HScript callbacks;
 the touch probes dispatch OpenFL events through FlxTouchManager and the production
-controls. Reentry mode enters the chosen song three times, returning through the
+controls, V-Slice pause and difficulty selection/restart. The middlescroll probe
+checks live notes/receptors and subsequent modchart offsets; the menu probe checks
+C in both song-selection screens. Reentry mode enters the chosen song three times, returning through the
 actual Freeplay menu between entries. Native video is replaced by a test double that fails if requested;
 Discord presence is disabled by a separate test double. These desktop C++ checks
 do not verify Android hardware, native video, complete-song progression or audio

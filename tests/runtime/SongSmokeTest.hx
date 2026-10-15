@@ -51,6 +51,7 @@ class SmokeInit extends FlxState
 		ClientPrefs.lowQuality = Sys.getEnv('SMOKE_QUALITY') != 'high';
 		ClientPrefs.gpuCaching = true;
 		ClientPrefs.shaders = true;
+		ClientPrefs.middleScroll = Sys.getEnv('SMOKE_MODE') == 'middlescroll';
 		ClientPrefs.gameplaySettings.set('practice', true);
 		ClientPrefs.gameplaySettings.set('botplay', Sys.getEnv('SMOKE_MODE') != 'game-touch');
 		funkin.mobile.TouchControls.install();
@@ -59,12 +60,29 @@ class SmokeInit extends FlxState
 			FlxG.switchState(() -> new TouchProbe());
 			return;
 		}
+		if (Sys.getEnv('SMOKE_MODE') == 'menu-difficulty')
+		{
+			new MenuDifficultyProbe();
+			FlxG.switchState(() -> new funkin.states.FreeplayState());
+			return;
+		}
 		var song = Sys.getEnv('SMOKE_SONG');
 		if (song == null) song = 'sussus-moogus';
 		PlayState.isStoryMode = false;
 		var chart = Sys.getEnv('SMOKE_HARD') == '1' ? song + '-hard' : song;
 		PlayState.SONG = Song.loadFromJson(chart, song);
+		// Sussus Moogus starts with 12 seconds of silence. Begin just before
+		// its first note so the positioning probe also exercises incoming notes.
+		if (Sys.getEnv('SMOKE_MODE') == 'middlescroll')
+		{
+			var firstNote = Math.POSITIVE_INFINITY;
+			for (section in PlayState.SONG.notes)
+				for (note in section.sectionNotes)
+					if (note[1] >= 0) firstNote = Math.min(firstNote, note[0]);
+			PlayState.startOnTime = Math.max(1, firstNote - 1000);
+		}
 		if (Sys.getEnv('SMOKE_MODE') == 'game-touch') new GameTouchProbe();
+		if (Sys.getEnv('SMOKE_MODE') == 'middlescroll') new MiddlescrollProbe();
 		FlxG.signals.postUpdate.add(checkSong);
 		FlxG.switchState(() -> new PlayState());
 	}

@@ -73,14 +73,14 @@ class TouchControls extends FlxBasic
 		touchCamera = new FlxCamera();
 		touchCamera.bgColor = 0;
 		FlxG.cameras.add(touchCamera, false);
-		pad = new MobileVirtualPad(!gameplay || !fourLanes, !gameplay);
+		var difficultyMenu = state.subState == null && (Std.isOfType(state, FreeplayState) || Std.isOfType(state, StoryMenuState));
+		pad = new MobileVirtualPad(!gameplay || !fourLanes, !gameplay, difficultyMenu);
 		hitbox = new MobileHitbox();
 		actions = new TouchInputManager();
 		if (gameplay)
 		{
 			addAction(FlxG.width - 180, 'PAUSE', A);
-			addAction(FlxG.width - 360, 'BACK', B);
-			addAction(0, 'DODGE', C);
+			addAction(0, 'C', C);
 		}
 		actions.refreshMappedButtons();
 		for (group in [pad, hitbox, actions])
@@ -90,8 +90,20 @@ class TouchControls extends FlxBasic
 	function addAction(x:Float, label:String, id:TouchInputID):Void
 	{
 		var button = new TouchButton(x, 0, [id], label);
-		button.makeGraphic(170, 90, 0xCC202020);
-		button.label.setFormat(Paths.font('vcr.ttf'), 25, FlxColor.WHITE, CENTER);
+		if (label == 'PAUSE')
+		{
+			button.x = FlxG.width - 100;
+			button.makeGraphic(90, 90, FlxColor.TRANSPARENT, true);
+			flixel.util.FlxSpriteUtil.drawCircle(button, 45, 45, 43, 0xCC202020);
+			flixel.util.FlxSpriteUtil.drawRect(button, 29, 23, 11, 44, FlxColor.WHITE);
+			flixel.util.FlxSpriteUtil.drawRect(button, 50, 23, 11, 44, FlxColor.WHITE);
+			button.text = '';
+		}
+		else
+		{
+			button.makeGraphic(170, 90, 0xCC202020);
+			button.label.setFormat(Paths.font('vcr.ttf'), 25, FlxColor.WHITE, CENTER);
+		}
 		button.alpha = 0.7;
 		actions.add(button);
 	}
@@ -158,11 +170,10 @@ class TouchControls extends FlxBasic
 			case 'note_right': self.fourLanes ? NOTE_RIGHT : RIGHT;
 			case 'accept', 'pause': A;
 			case 'back': B;
-			case 'note_dodge': C;
+			case 'difficulty': C;
 			default: NONE;
 		};
-		if (name == 'pause' && self.gameplay && self.actions.isJustPressed(B)) return true;
-		if (name == 'accept' || name == 'back' || name == 'pause') state = JUST_PRESSED;
+		if (name == 'accept' || name == 'back' || name == 'pause' || name == 'difficulty') state = JUST_PRESSED;
 		var group:TouchInputManager = self.gameplay ? (name.startsWith('note_')
 			&& name != 'note_dodge' ? (self.fourLanes ? self.hitbox : self.pad) : self.actions) : self.pad;
 		// Gameplay actions must not leak into menu/note bindings and vice versa.

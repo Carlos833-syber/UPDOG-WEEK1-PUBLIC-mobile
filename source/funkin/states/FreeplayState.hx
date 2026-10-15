@@ -399,7 +399,8 @@ class FreeplayState extends MusicBeatState
 			if (controls.UI_DOWN_P) changeSong(1);
 			if (controls.UI_LEFT_P) changeWeek(-1);
 			if (controls.UI_RIGHT_P) changeWeek(1);
-			if (FlxG.keys.justPressed.E || FlxG.keys.justPressed.Q) changeDiff();
+			if (FlxG.keys.justPressed.E || FlxG.keys.justPressed.Q || FlxG.keys.justPressed.C
+				#if MOBILE_CONTROLS || funkin.mobile.TouchControls.check('difficulty') #end) changeDiff();
 			if (controls.ACCEPT) startSong();
 			if (controls.BACK)
 			{

@@ -2311,7 +2311,11 @@ class PlayState extends MusicBeatState
 		setOnHScripts('curStep', curStep);
 		setOnHScripts('curBeat', curBeat);
 		
-		if (controls.PAUSE && startedCountdown && canPause)
+		var difficultyPressed = FlxG.keys.justPressed.C;
+		#if MOBILE_CONTROLS
+		difficultyPressed = difficultyPressed || funkin.mobile.TouchControls.check('difficulty');
+		#end
+		if ((controls.PAUSE || difficultyPressed) && startedCountdown && canPause)
 		{
 			final ret:Dynamic = callOnScripts('onPause', []);
 			if (ret != Globals.Function_Stop)
@@ -2325,7 +2329,7 @@ class PlayState extends MusicBeatState
 					FlxG.sound.music.pause();
 					vocals.pause();
 				}
-				openSubState(new funkin.states.substates.ImpostorPause());
+				openSubState(new funkin.states.substates.VSlicePauseSubState(difficultyPressed));
 				#if DISCORD_ALLOWED
 				DiscordClient.changePresence(detailsPausedText, getPresence());
 				#end
@@ -3421,7 +3425,7 @@ class PlayState extends MusicBeatState
 		
 		if (ret != Globals.Function_Stop && !transitioning)
 		{
-			if (SONG.validScore)
+			if (SONG.validScore && !practiceMode)
 			{
 				#if !switch
 				var percent:Float = ratingPercent;
@@ -3465,7 +3469,7 @@ class PlayState extends MusicBeatState
 					}
 					
 					// if ()
-					if (!ClientPrefs.getGameplaySetting('practice', false) && !ClientPrefs.getGameplaySetting('botplay', false))
+					if (!practiceMode && !changedDifficulty && !ClientPrefs.getGameplaySetting('practice', false) && !ClientPrefs.getGameplaySetting('botplay', false))
 					{
 						StoryMenuState.weekCompleted.set(WeekData.weeksList[storyWeek], true);
 						

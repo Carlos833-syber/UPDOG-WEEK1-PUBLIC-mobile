@@ -203,6 +203,15 @@ class ModManager
 
 	public function getBaseX(direction:Int, player:Int):Float
 	{
+		// Notes and receptors both use this baseline every frame. Match the
+		// centered PlayField layout instead of overwriting it with the side layout.
+		if (ClientPrefs.middleScroll && (player == 0 || player == 1))
+		{
+			var x = FlxG.width * 0.5 - Note.swagWidth * 2.5 + 54 + Note.swagWidth * direction;
+			if (player == 1) x += (direction > 1 ? 1 : -1) * Note.swagWidth * 3;
+			return x;
+		}
+
 		var x:Float = (FlxG.width * 0.5) - Note.swagWidth - 54 + Note.swagWidth * direction;
 		switch (player)
 		{

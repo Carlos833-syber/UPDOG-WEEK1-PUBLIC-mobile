@@ -1,4 +1,5 @@
 import importlib.util
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,6 +12,22 @@ spec.loader.exec_module(module)
 
 
 class AndroidAssetsTest(unittest.TestCase):
+    def test_empty_assets_remain_in_extraction_manifest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            old_root = module.ROOT
+            self.addCleanup(setattr, module, "ROOT", old_root)
+            module.ROOT = Path(directory)
+            for name in ["assets/fonts/fonts-go-here.txt", "content/custom_events/dialogue.txt"]:
+                path = module.ROOT / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"")
+            entries = {entry["path"]: entry for entry in module.build_manifest()["files"]}
+            self.assertEqual(len(entries), 2)
+            for name, entry in entries.items():
+                self.assertEqual(entry["id"], name)
+                self.assertEqual(entry["size"], 0)
+                self.assertEqual(entry["sha256"], hashlib.sha256(b"").hexdigest())
+
     def test_asset_ids_overrides_and_update_fingerprint(self):
         with tempfile.TemporaryDirectory() as directory:
             old_root = module.ROOT

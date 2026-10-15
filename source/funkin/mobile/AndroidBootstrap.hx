@@ -67,7 +67,8 @@ class AndroidBootstrap extends FlxState
 				if (previous.get(entry.path) == entry.sha256
 					&& FileSystem.exists(destination)
 					&& FileSystem.stat(destination).size == entry.size) continue;
-				var bytes = Assets.getBytes(entry.id);
+				// Lime's native Bytes.fromFile returns null for zero-byte files.
+				var bytes = entry.size == 0 && Assets.exists(entry.id) ? haxe.io.Bytes.alloc(0) : Assets.getBytes(entry.id);
 				if (bytes == null || bytes.length != entry.size) throw 'Missing or damaged asset: ${entry.id}';
 				FileSystem.createDirectory(Path.directory(destination));
 				File.saveBytes(destination + ".tmp", bytes);

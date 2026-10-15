@@ -60,10 +60,10 @@ class Stage extends FlxTypedGroup<FlxBasic>
 				s.set("stage", this);
 				s.call("onLoad");
 
-			#if LUA_ALLOWED
 			case LUA:
+				#if LUA_ALLOWED
 				s.call("onCreate", []);
-			#end
+				#end
 		}
 	}
 

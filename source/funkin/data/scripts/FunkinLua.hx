@@ -2738,12 +2738,14 @@ class FunkinLua extends FunkinScript
 		#end
 		return Function_Continue;
 	}*/
+	#if LUA_ALLOWED
 	function getErrorMessage()
 	{
 		var v:String = Lua.tostring(lua, -1);
 		Lua.pop(lua, 1);
 		return v;
 	}
+	#end
 
 	override public function call(func:String, ?args:Array<Dynamic>):Dynamic
 	{

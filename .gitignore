@@ -22,3 +22,7 @@ export/*
 !.vscode/launch.json
 !.vscode/extensions.json
 bin - Shortcut.lnk
+
+# Generated Android asset manifest
+.android/
+__pycache__/

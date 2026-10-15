@@ -47,7 +47,7 @@ class Main extends Sprite
 			FNFGame
 			#else
 			FlxGame
-			#end(startMeta.width, startMeta.height, #if !debug Splash #else startMeta.initialState #end, startMeta.fps, startMeta.fps, startMeta.skipSplash,
+			#end(startMeta.width, startMeta.height, #if android funkin.mobile.AndroidBootstrap #elseif !debug Splash #else startMeta.initialState #end, startMeta.fps, startMeta.fps, startMeta.skipSplash,
 				startMeta.startFullScreen);
 
 		// FlxG.game._customSoundTray wants just the class, it calls new from
@@ -59,6 +59,10 @@ class Main extends Sprite
 		@:privateAccess
 		game._customSoundTray = funkin.objects.FunkinSoundTray;
 		addChild(game);
+
+		#if android
+		addChild(new funkin.mobile.TouchControls());
+		#end
 
 		#if !mobile
 		fpsVar = new DebugDisplay(10, 3, 0xFFFFFF);

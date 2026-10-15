@@ -359,7 +359,7 @@ class TitleState extends MusicBeatState
 		
 		if (isHardcodedState())
 		{
-			#if mobile
+			#if (mobile && !android)
 			for (touch in FlxG.touches.list)
 			{
 				if (touch.justPressed)

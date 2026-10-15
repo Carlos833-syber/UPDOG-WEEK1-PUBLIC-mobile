@@ -553,10 +553,10 @@ class PlayState extends MusicBeatState
 			{
 				case HSCRIPT:
 					hscriptArray.push(cast stage.curStageScript);
-				#if LUA_ALLOWED
 				case LUA:
+					#if LUA_ALLOWED
 					luaArray.push(cast stage.curStageScript);
-				#end
+					#end
 			}
 			funkyScripts.push(stage.curStageScript);
 			// trace(stage.curStageScript.scriptName);
@@ -1047,10 +1047,10 @@ class PlayState extends MusicBeatState
 			{
 				case HSCRIPT:
 					hscriptArray.push(cast char.curCharacterScript);
-				#if LUA_ALLOWED
 				case LUA:
+					#if LUA_ALLOWED
 					luaArray.push(cast char.curCharacterScript);
-				#end
+					#end
 			}
 			funkyScripts.push(char.curCharacterScript);
 			trace(char.curCharacterScript.scriptName);
@@ -4898,9 +4898,11 @@ class PlayState extends MusicBeatState
 		super.startOutro(onOutroComplete);
 	}
 	
+	#if DISCORD_ALLOWED
 	function getPresence()
 	{
 		// Get the discord presence
 		return ClientPrefs.disc_rpc ? SONG.song : FlxG.random.getObject(DiscordClient.discordPresences);
 	}
+	#end
 }

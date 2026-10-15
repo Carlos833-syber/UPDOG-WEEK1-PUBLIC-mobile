@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project>
+<project xmlns:config="http://lime.openfl.org/config">
 	<!-- _________________________ Application Settings _________________________ -->
 
 	<app title="Vs. Impostor" file="Vs. Impostor" packageName="com.updog.impostor" package="com.updog.impostor" main="Main" version="0.2.7" company="UpdogTeam" />
@@ -38,7 +38,7 @@
 	<!-- _____________________________ Path Settings ____________________________ -->
 
 	<!-- Use project assets folder instead of the build one if on a debug build. -->
-	<define name="ASSET_REDIRECT" if="debug"/>
+	<define name="ASSET_REDIRECT" if="desktop debug"/>
 
 	<!--<define name="RELEASE_BUILD"/>-->
 
@@ -50,17 +50,18 @@
 	<classpath name="source" />
 	
 	<!-- PSYCH ENGINE CUSTOMIZATION -->
-	<define name="MODS_ALLOWED" if="desktop" />
+	<define name="MODS_ALLOWED" if="desktop || android" />
 	<define name="LUA_ALLOWED" if="desktop" />
 	<define name="VIDEOS_ALLOWED" if="cpp" />
-	<define name="DISCORD_ALLOWED" if="cpp"/>
+	<define name="DISCORD_ALLOWED" if="desktop"/>
 
-	<assets path='assets/embeds' 		rename='assets'			embed="true" />
-	<assets path="assets/embeds/songs" rename= "assets/songs" library="songs" embed="true"/>
+	<assets path="assets/embeds" rename="assets" embed="true" unless="android" />
+	<assets path="assets/embeds" rename="assets" embed="false" if="android" />
 
 
 
 	<assets path="assets/fonts" />
+	<assets path="assets/fonts" rename="android-fonts/assets/fonts" type="binary" embed="false" if="android" />
 	<assets path="assets/shared"        exclude="*.ogg" 		if="web"/>
 	<assets path="assets/shared"        exclude="*.mp3" 		unless="web"/>
 	<assets path="assets/videos"        library="videos"        if="VIDEOS_ALLOWED"/>
@@ -68,7 +69,8 @@
 	<library name="videos"        preload="true" if="VIDEOS_ALLOWED"/>
 	<library name="songs"         preload="true" />
 
-	<assets path='content' embed='false' if="MODS_ALLOWED"/>
+	<assets path="content" embed="false" if="MODS_ALLOWED" />
+	<assets path="content/fonts" rename="android-fonts/content/fonts" type="binary" embed="false" if="android" />
 
 	<!-- OpenAL config --> 	<!-- appreciate you cyn0x8 and smokey for finding this -->
 	<section if="desktop">
@@ -76,6 +78,14 @@
 		<assets path="projFiles/alsoft.ini" rename="alsoft.conf" type="text" unless="windows"/>
 	</section>
 
+
+	<section if="android">
+		<config:android minimum-sdk-version="23" target-sdk-version="34" />
+		<architecture name="arm64" />
+		<architecture exclude="armv7" />
+		<assets path=".android/manifest.json" rename="android-manifest.json" type="text" />
+		<define name="RELEASE_BUILD" />
+	</section>
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
